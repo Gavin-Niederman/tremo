@@ -23,25 +23,25 @@ macro_rules! __measure_conversions {
     {} => {};
     {$self:ty,} => {};
     ($self:ident, Self * $rhs:ident => $output:ident in $output_unit:ty, $($rest:tt)*) => {
-        impl const $crate::dimension::DimMul<$rhs> for $self {
+        impl $crate::dimension::DimMul<$rhs> for $self {
             type Output = $output;
         }
         $crate::__measure_conversions!($self, $($rest)*);
     };
     ($self:ident, Self / $rhs:ident => $output:ident in $output_unit:ty, $($rest:tt)*) => {
-        impl const $crate::dimension::DimDiv<$rhs> for $self {
+        impl $crate::dimension::DimDiv<$rhs> for $self {
             type Output = $output;
         }
         $crate::__measure_conversions!($self, $($rest)*);
     };
     ($self:ident, Self * any, $($rest:tt)*) => {
-        impl<D: $crate::dimension::Dimension> const $crate::dimension::DimMul<D> for $self {
+        impl<D: $crate::dimension::Dimension> $crate::dimension::DimMul<D> for $self {
             type Output = $crate::dimension::Mul<Self, D>;
         }
         $crate::__measure_conversions!($self, $($rest)*);
     };
     ($self:ident, Self / any, $($rest:tt)*) => {
-        impl<D: $crate::dimension::Dimension> const $crate::dimension::DimDiv<D> for $self {
+        impl<D: $crate::dimension::Dimension> $crate::dimension::DimDiv<D> for $self {
             type Output = $crate::dimension::Per<Self, D>;
         }
         $crate::__measure_conversions!($self, $($rest)*);
@@ -179,8 +179,7 @@ macro_rules! dimension {
         #[derive(Copy, Clone, Debug)]
         $vis enum $name {}
 
-        impl const $crate::dimension::Dimension for $name {
-        }
+        impl $crate::dimension::Dimension for $name {}
 
         $(
             $crate::simple_unit!(

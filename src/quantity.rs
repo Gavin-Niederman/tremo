@@ -2,7 +2,7 @@ use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::{
     Dimension, Scalar, UnitOf,
-    dimension::{DimDiv, DimMul},
+    dimension::{DimDiv, DimMul, Simplify, simplify},
 };
 
 #[derive(Copy, Debug)]
@@ -53,33 +53,38 @@ const impl<D: Dimension, S: [const] Scalar> Quantity<D, S> {
     pub fn from_canonical(value: S) -> Self {
         Self::new(value)
     }
+
+    #[inline]
+    pub fn simplify<M>(self) -> Quantity<D::Simplified, S>
+    where
+        D: Simplify<M>,
+    {
+        let value = self.canonical();
+        Quantity::from_canonical(value)
+    }
 }
 
 // Traits that can't be const_derived because of PhantomData
 
-impl<D: [const] Dimension, S: [const] Scalar> const Clone for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const Clone for Quantity<D, S> {
     fn clone(&self) -> Self {
         Self::new(self.value.clone())
     }
 }
 
-impl<D: [const] Dimension, S: [const] Scalar + [const] PartialEq> const PartialEq
-    for Quantity<D, S>
-{
+impl<D: Dimension, S: [const] Scalar + [const] PartialEq> const PartialEq for Quantity<D, S> {
     fn eq(&self, other: &Self) -> bool {
         self.value == other.value
     }
 }
-impl<D: [const] Dimension, S: [const] Scalar + [const] Eq> const Eq for Quantity<D, S> {}
+impl<D: Dimension, S: [const] Scalar + [const] Eq> const Eq for Quantity<D, S> {}
 
-impl<D: [const] Dimension, S: [const] Scalar + [const] Ord> const Ord for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar + [const] Ord> const Ord for Quantity<D, S> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.value.cmp(&other.value)
     }
 }
-impl<D: [const] Dimension, S: [const] Scalar + [const] PartialOrd> const PartialOrd
-    for Quantity<D, S>
-{
+impl<D: Dimension, S: [const] Scalar + [const] PartialOrd> const PartialOrd for Quantity<D, S> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.value.partial_cmp(&other.value)
     }
@@ -87,53 +92,53 @@ impl<D: [const] Dimension, S: [const] Scalar + [const] PartialOrd> const Partial
 
 // MDAS overloads
 
-impl<D: [const] Dimension, S: [const] Scalar> const Mul<S> for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const Mul<S> for Quantity<D, S> {
     type Output = Self;
 
     fn mul(self, rhs: S) -> Self::Output {
         Self::new(self.value * rhs)
     }
 }
-impl<D: [const] Dimension, S: [const] Scalar> const MulAssign<S> for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const MulAssign<S> for Quantity<D, S> {
     fn mul_assign(&mut self, rhs: S) {
         self.value = self.value.clone() * rhs
     }
 }
 
-impl<D: [const] Dimension, S: [const] Scalar> const Div<S> for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const Div<S> for Quantity<D, S> {
     type Output = Self;
 
     fn div(self, rhs: S) -> Self::Output {
         Self::new(self.value / rhs)
     }
 }
-impl<D: [const] Dimension, S: [const] Scalar> const DivAssign<S> for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const DivAssign<S> for Quantity<D, S> {
     fn div_assign(&mut self, rhs: S) {
         self.value = self.value.clone() / rhs
     }
 }
 
-impl<D: [const] Dimension, S: [const] Scalar> const Add for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const Add for Quantity<D, S> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         Self::new(self.value + rhs.value)
     }
 }
-impl<D: [const] Dimension, S: [const] Scalar> const AddAssign for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const AddAssign for Quantity<D, S> {
     fn add_assign(&mut self, rhs: Self) {
         self.value = self.value.clone() + rhs.value
     }
 }
 
-impl<D: [const] Dimension, S: [const] Scalar> const Sub for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const Sub for Quantity<D, S> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         Self::new(self.value - rhs.value)
     }
 }
-impl<D: [const] Dimension, S: [const] Scalar> const SubAssign for Quantity<D, S> {
+impl<D: Dimension, S: [const] Scalar> const SubAssign for Quantity<D, S> {
     fn sub_assign(&mut self, rhs: Self) {
         self.value = self.value.clone() - rhs.value
     }
@@ -143,11 +148,8 @@ impl<D: [const] Dimension, S: [const] Scalar> const SubAssign for Quantity<D, S>
 
 // Operations with other quantities
 
-impl<
-    LhsDim: [const] Dimension + [const] DimMul<RhsDim>,
-    RhsDim: [const] Dimension,
-    S: [const] Scalar,
-> const Mul<Quantity<RhsDim, S>> for Quantity<LhsDim, S>
+impl<LhsDim: Dimension + DimMul<RhsDim>, RhsDim: Dimension, S: [const] Scalar> const
+    Mul<Quantity<RhsDim, S>> for Quantity<LhsDim, S>
 {
     type Output = Quantity<LhsDim::Output, S>;
 
@@ -156,7 +158,7 @@ impl<
     }
 }
 
-impl<LhsDim: [const] Dimension + DimDiv<RhsDim>, RhsDim: [const] Dimension, S: [const] Scalar> const
+impl<LhsDim: Dimension + DimDiv<RhsDim>, RhsDim: Dimension, S: [const] Scalar> const
     Div<Quantity<RhsDim, S>> for Quantity<LhsDim, S>
 {
     type Output = Quantity<LhsDim::Output, S>;
