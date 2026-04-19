@@ -1,4 +1,4 @@
-use crate::quantity::Quantity;
+use crate::{dimension, quantity::Quantity};
 
 pub trait Dimension {}
 
@@ -11,8 +11,16 @@ pub trait DimDiv<Rhs: Dimension> {
     type Output: Dimension;
 }
 
-pub enum Dimensionless {}
-impl Dimension for Dimensionless {}
+dimension! {
+    pub dim Dimensionless {
+        Value: 1.0 per canonical,
+    } where {
+        Self / any,
+    }
+}
+impl<R: Dimension> DimMul<R> for Dimensionless {
+    type Output = R;
+}
 
 /// Marker trait for dimensions made with operations. (e.g Per, Mul)
 pub trait OperationDimension {}
@@ -65,6 +73,20 @@ impl<Num: Dimension, Shared: Dimension> Simplify<DOverDMarkerLeft>
     for Per<Mul<Shared, Num>, Shared>
 {
     type Simplified = Num;
+}
+
+// Dimensionless cases
+pub enum DimensionlessOpMarkerLeft {}
+pub enum DimensionlessOpMarkerRight {}
+
+impl<Num: Dimension> Simplify<DimensionlessOpMarkerLeft> for Per<Num, Dimensionless> {
+    type Simplified = Num;
+}
+impl<L: Dimension> Simplify<DimensionlessOpMarkerLeft> for Mul<L, Dimensionless> {
+    type Simplified = L;
+}
+impl<R: Dimension> Simplify<DimensionlessOpMarkerRight> for Mul<Dimensionless, R> {
+    type Simplified = R;
 }
 
 // Base case

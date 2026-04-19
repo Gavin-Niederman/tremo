@@ -15,9 +15,9 @@ fn main() {
 
     let simplified = (num / den).simplify();
 
-    let distance = velocity * (2.0f32 * Seconds) * (4.0f32 * Moles) / (1.0f32 * Moles);
+    let distance = (velocity * (2.0f32 * Seconds)).mul(4.0f32 * Moles) / (1.0f32 * Moles);
     let distance = distance.simplify();
-    println!("{distance:?}")
+    println!("{distance:?} {simplified:?}")
 }
 
 const fn const_operations() -> Quantity<LinearVelocity> {

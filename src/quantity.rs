@@ -2,7 +2,7 @@ use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::{
     Dimension, Scalar, UnitOf,
-    dimension::{DimDiv, DimMul, Simplify, simplify},
+    dimension::{DimDiv, DimMul, Per, Simplify},
 };
 
 #[derive(Copy, Debug)]
@@ -61,6 +61,18 @@ const impl<D: Dimension, S: [const] Scalar> Quantity<D, S> {
     {
         let value = self.canonical();
         Quantity::from_canonical(value)
+    }
+
+    #[inline]
+    pub fn over<Den: Dimension>(self, other: Quantity<Den, S>) -> Quantity<Per<D, Den>, S> {
+        Quantity::new(self.value / other.value)
+    }
+    #[inline]
+    pub fn mul<Rhs: Dimension>(
+        self,
+        other: Quantity<Rhs, S>,
+    ) -> Quantity<crate::dimension::Mul<D, Rhs>, S> {
+        Quantity::new(self.value / other.value)
     }
 }
 

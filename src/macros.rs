@@ -22,13 +22,13 @@ macro_rules! __unit_mult_imp {
 macro_rules! __measure_conversions {
     {} => {};
     {$self:ty,} => {};
-    ($self:ident, Self * $rhs:ident => $output:ident in $output_unit:ty, $($rest:tt)*) => {
+    ($self:ident, Self * $rhs:ident => $output:ident, $($rest:tt)*) => {
         impl $crate::dimension::DimMul<$rhs> for $self {
             type Output = $output;
         }
         $crate::__measure_conversions!($self, $($rest)*);
     };
-    ($self:ident, Self / $rhs:ident => $output:ident in $output_unit:ty, $($rest:tt)*) => {
+    ($self:ident, Self / $rhs:ident => $output:ident, $($rest:tt)*) => {
         impl $crate::dimension::DimDiv<$rhs> for $self {
             type Output = $output;
         }
@@ -166,7 +166,7 @@ macro_rules! simple_unit {
 macro_rules! dimension {
     (
         $(#[$meta:meta])*
-        $vis:vis dim $name:ident($canonical_unit:ident) {
+        $vis:vis dim $name:ident {
             $(
                 $(#[$unit_meta:meta])*
                 $unit:ident: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
