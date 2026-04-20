@@ -1,4 +1,8 @@
-use crate::{Scalar, UnitOf, dimension, dimension::Dimensionless, unit_type};
+use crate::{
+    Scalar, UnitOf, derived_dimension, dimension,
+    dimension::{Mul, Per},
+    unit_type,
+};
 
 // # Base Dimensions
 
@@ -14,14 +18,6 @@ dimension! {
         Yards: per 0.9144 canonical,
         Miles: per 1609.344 canonical,
         NauticalMiles: per 1852.0 canonical,
-    } where {
-        Self / Time => LinearVelocity,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
-        Self * Force => Energy,
-        Self * Length => Area,
-        Self * Area => Volume,
-        Self * Dimensionless => Self,
     }
 }
 
@@ -35,12 +31,6 @@ dimension! {
         SquareFeet: 10.7639104167097 per canonical,
         SquareYards: per 0.83612736 canonical,
         Acres: per 4046.8564224 canonical,
-    } where {
-        Self / Length => Length,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
-        Self * Length => Volume,
-        Self * Dimensionless => Self,
     }
 }
 
@@ -59,12 +49,6 @@ dimension! {
         Pints: 2113.37641886519 per canonical,
         Quarts: 1056.68820943259 per canonical,
         Gallons: 264.172052358148 per canonical,
-    } where {
-        Self / Length => Area,
-        Self / Area => Length,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
-        Self * any,
     }
 }
 
@@ -79,13 +63,6 @@ dimension! {
         Days: per 86_400.0 canonical,
         Weeks: per 604_800.0 canonical,
         Years: per 31_556_926.0 canonical,
-    } where {
-        Self * LinearVelocity => Length,
-        Self * LinearAcceleration => LinearVelocity,
-        Self * AngularVelocity => Angle,
-        Self * AngularAcceleration => AngularVelocity,
-        Self * Dimensionless => Self,
-        Self / any,
     }
 }
 
@@ -95,11 +72,6 @@ dimension! {
         Rotations: per 6.28318530717959 canonical,
         Degrees: 57.2957795130823 per canonical,
         Gradians: 63.6619772367581 per canonical,
-    } where {
-        Self / Time => AngularVelocity,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
-        Self * any,
     }
 }
 
@@ -116,10 +88,6 @@ dimension! {
         MetricTons: per 1000.0 canonical,
         ShortTons: per 907.18474 canonical,
         LongTons: per 1016.0469088 canonical,
-    } where {
-        Self * LinearAcceleration => Force,
-        Self * Dimensionless => Self,
-        Self / any,
     }
 }
 
@@ -128,28 +96,18 @@ dimension! {
         Milliamperes: 1000.0 per canonical,
         Amperes: 1.0 per canonical,
         Kiloamperes: per 1000.0 canonical,
-    } where {
-        Self * Voltage => Power,
-        Self * Dimensionless => Self,
-        Self / any,
     }
 }
 
 dimension! {
     pub dim Amount {
         Moles: 1.0 per canonical,
-    } where {
-        Self * any,
-        Self / any,
     }
 }
 
 dimension! {
     pub dim Luminosity {
         Candelas: 1.0 per canonical,
-    } where {
-        Self * any,
-        Self / any,
     }
 }
 
@@ -157,9 +115,6 @@ dimension! {
     /// Represents temperature. Canonically represented in kelvin.
     pub dim Temperature {
         Kelvin: 1.0 per canonical,
-    } where {
-        Self * any,
-        Self / any,
     }
 }
 
@@ -185,152 +140,104 @@ impl const UnitOf<Temperature> for Fahrenheit {
 
 // # Derived Dimensions
 
-dimension! {
-    pub dim LinearVelocity {
+derived_dimension! {
+    pub dim LinearVelocity(Per<Length, Time>) {
         MetersPerSecond: 1.0 per canonical,
         KilometersPerSecond: per 1000.0 canonical,
         KilometersPerHour: 3.6 per canonical,
         FeetPerSecond: 3.281 per canonical,
         MilesPerHour: per 0.44704 canonical,
-    } where {
-        Self * Time => Length,
-        Self * Dimensionless => Self,
-        Self / Time => LinearAcceleration,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
     }
 }
 
-dimension! {
-    pub dim LinearAcceleration {
+derived_dimension! {
+    pub dim LinearAcceleration(Per<LinearVelocity, Time>) {
         MetersPerSecondSquared: 1.0 per canonical,
         FeetPerSecondSquared: per 0.3048 canonical,
-    } where {
-        Self * Time => LinearVelocity,
-        Self * Mass => Force,
-        Self * Dimensionless => Self,
-        Self / any,
     }
 }
 
-dimension! {
-    pub dim AngularVelocity {
+derived_dimension! {
+    pub dim AngularVelocity(Per<Angle, Time>) {
         RadiansPerSecond: 1.0 per canonical,
         RotationsPerSecond: per 6.28318530717959 canonical,
         RotationsPerMinute: 9.54929658551372 per canonical,
         DegreesPerSecond: 57.2957795130823 per canonical,
-    } where {
-        Self * Time => Angle,
-        Self * Dimensionless => Self,
-        Self / Time => AngularAcceleration,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
     }
 }
 
-dimension! {
-    pub dim AngularAcceleration {
+derived_dimension! {
+    pub dim AngularAcceleration(Per<AngularVelocity, Time>) {
         RadiansPerSecondSquared: 1.0 per canonical,
         RotationsPerSecondSquared: per 6.28318530717959 canonical,
         RotationsPerMinuteSquared: 572.957795130823 per canonical,
         DegreesPerSecondSquared: 57.2957795130823 per canonical,
-    } where {
-        Self * Time => AngularVelocity,
-        Self * Dimensionless => Self,
-        Self / any,
     }
 }
 
-dimension! {
+derived_dimension! {
     /// Represents force. Canonically represented in newtons.
-    pub dim Force {
+    pub dim Force(Mul<Mass, LinearAcceleration>) {
         Newtons: 1.0 per canonical,
         PoundsForce: 4.4482216 per canonical,
         Dynes: per 1e-05 canonical,
-    } where {
-        Self * Length => Energy,
-        Self * Dimensionless => Self,
-        Self / LinearAcceleration => Mass,
-        Self / Mass => LinearAcceleration,
-        Self / Area => Pressure,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
     }
 }
 
-dimension! {
+derived_dimension! {
     /// Represents pressure. Canonically represented in pascals.
-    pub dim Pressure {
+    pub dim Pressure(Per<Force, Area>) {
         Pascals: 1.0 per canonical,
         Psi: per 6894.75729316836 canonical,
         Atmospheres: per 101325.0 canonical,
         Bars: per 100_000.0 canonical,
-    } where {
-        Self * Area => Force,
-        Self * Dimensionless => Self,
-        Self / any,
     }
 }
 
-dimension! {
+derived_dimension! {
     /// Represents torque. Canonically represented in newton-meters per radian.
-    pub dim Torque {
+    pub dim Torque(Per<Mul<Force, Length>, Angle>) {
         NewtonMetersPerRadian: 1.0 per canonical,
         NewtonMetersPerDegree: per 57.2957795130823 canonical,
         PoundFeetPerRadian: per 1.3558179483314 canonical,
         PoundFeetPerDegree: per 77.6826462274756 canonical,
         DyneCentimetersPerRadian: 10_000_000.0 per canonical,
-    } where {
-        Self * Angle => Energy,
-        Self * Dimensionless => Self,
-        Self / any,
     }
 }
 
-dimension! {
+derived_dimension! {
     /// Represents energy. Canonically represented in joules.
-    pub dim Energy {
+    pub dim Energy(Mul<Force, Length>) {
         Joules: 1.0 per canonical,
         Calories: per 4.184 canonical,
         Kilocalories: per 4184.0 canonical,
         Ergs: 10e-7 per canonical,
         WattHours: per 3600.0 canonical,
-    } where {
-        Self / Length => Force,
-        Self / Angle => Torque,
-        Self / Time => Power,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
-        Self * any,
     }
 }
 
-dimension! {
+derived_dimension! {
     /// Represents power. Canonically represented in watts.
-    pub dim Power {
+    pub dim Power(Per<Energy, Time>) {
         Watts: 1.0 per canonical,
         Horsepower: per 745.69987158227 canonical,
         ErgsPerSecond: 10e-7 per canonical,
         FootPoundsPerMinute: 44.2537289566359 per canonical,
-    } where {
-        Self / Voltage => Current,
-        Self / Current => Voltage,
-        Self / Self => Dimensionless,
-        Self / Dimensionless => Self,
-        Self * Time => Energy,
-        Self * Dimensionless => Self,
     }
 }
 
-dimension! {
+derived_dimension! {
     /// Represents voltage. Canonically represented in volts.
-    pub dim Voltage {
+    pub dim Charge(Mul<Current, Time>) {
+        Coulombs: 1.0 per canonical,
+    }
+}
+
+derived_dimension! {
+    /// Represents voltage. Canonically represented in volts.
+    pub dim Voltage(Per<Energy, Charge>) {
         Millivolts: 1000.0 per canonical,
         Volts: 1.0 per canonical,
         Kilovolts: per 1000.0 canonical,
-    } where {
-        Self * Current => Power,
-        Self * Dimensionless => Self,
-        Self / any,
     }
 }

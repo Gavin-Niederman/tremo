@@ -144,6 +144,33 @@ macro_rules! simple_unit {
     };
 }
 
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __dimension_raw {
+    (
+        $(#[$meta:meta])*
+        $vis:vis dim $name:ident {
+            $(
+                $(#[$unit_meta:meta])*
+                $unit:ident: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
+            )+
+        }
+    ) => {
+        $(#[$meta])*
+        #[derive(Copy, Clone, Debug)]
+        $vis enum $name {}
+
+        impl $crate::dimension::Dimension for $name {}
+
+        $(
+            $crate::simple_unit!(
+                $(#[$unit_meta])*
+                $vis $unit of dimension $name = $($rhsper per canonical)? $(per $lhsper canonical)?
+            );
+        )+
+    }
+}
+
 /// Defines a dimension together with its units and optional cross-dimension conversions.
 ///
 /// # Syntax
@@ -171,15 +198,40 @@ macro_rules! dimension {
                 $(#[$unit_meta:meta])*
                 $unit:ident: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
             )+
-        } $(where {
-            $($converts:tt)*
-        })?
+        }
     ) => {
-        $(#[$meta])*
-        #[derive(Copy, Clone, Debug)]
-        $vis enum $name {}
+        $crate::__dimension_raw!(
+            $(#[$meta])*
+            $vis dim $name {
+                $(
+                    $(#[$unit_meta])*
+                    $unit: $($rhsper per canonical)? $(per $lhsper canonical)?,
+                )+
+            }
+        );
 
-        impl $crate::dimension::Dimension for $name {}
+        impl<D: $crate::dimension::Dimension> $crate::dimension::DimMul<D> for $name {
+            type Output = $crate::dimension::Mul<Self, D>;
+        }
+        impl<D: $crate::dimension::Dimension> $crate::dimension::DimDiv<D> for $name {
+            type Output = $crate::dimension::Per<Self, D>;
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! derived_dimension {
+    {
+        $(#[$meta:meta])*
+        $vis:vis dim $name:ident($type:ty) {
+            $(
+                $(#[$unit_meta:meta])*
+                $unit:ident: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
+            )+
+        }
+    } => {
+        $(#[$meta])*
+        $vis type $name = $type;
 
         $(
             $crate::simple_unit!(
@@ -187,9 +239,5 @@ macro_rules! dimension {
                 $vis $unit of dimension $name = $($rhsper per canonical)? $(per $lhsper canonical)?
             );
         )+
-
-        $(
-            $crate::__measure_conversions!($name, $($converts)*);
-        )?
-    };
+    }
 }
