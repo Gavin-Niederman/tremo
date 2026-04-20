@@ -2,11 +2,11 @@
 
 use tuant::{
     dimension::simplify::{Cancel, Commute, PassL},
-    premade::{
+    quantity::Quantity,
+    si::{
         DegreesPerSecondSquared, Frequency, Joules, LinearVelocity, Meters, MetersPerSecond,
         Seconds,
     },
-    quantity::Quantity,
 };
 
 fn main() {

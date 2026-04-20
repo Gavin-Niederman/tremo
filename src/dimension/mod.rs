@@ -1,6 +1,6 @@
 pub mod simplify;
 
-use crate::{__dimension_raw, quantity::Quantity};
+use crate::__dimension_raw;
 
 pub trait Dimension {}
 
