@@ -2,7 +2,7 @@ use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::{
     Dimension, Scalar, UnitOf,
-    dimension::{DimDiv, DimMul, Per, Simplify},
+    dimension::{DimDiv, DimMul, Per, simplify::Simplify},
 };
 
 #[derive(Copy, Debug)]

@@ -1,6 +1,6 @@
 use crate::{
     Scalar, UnitOf, derived_dimension, dimension,
-    dimension::{Mul, Per},
+    dimension::{Dimensionless, Mul, Per},
     unit_type,
 };
 
@@ -239,5 +239,12 @@ derived_dimension! {
         Millivolts: 1000.0 per canonical,
         Volts: 1.0 per canonical,
         Kilovolts: per 1000.0 canonical,
+    }
+}
+
+derived_dimension! {
+    /// Represents frequency
+    pub dim Frequency(Per<Dimensionless, Time>) {
+        Hertz: 1.0 per canonical,
     }
 }
