@@ -1,14 +1,29 @@
 use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::fmt::{Debug, Display};
 
 use crate::{
-    Dimension, Scalar, UnitOf,
+    Abbreviate, CanonicalUnit, Dimension, Scalar, UnitOf,
     dimension::{DimDiv, DimMul, Per, simplify::Simplify},
 };
 
-#[derive(Copy, Debug)]
+#[derive(Copy)]
 pub struct Quantity<D: Dimension, S: Scalar = f32> {
     value: S,
     _marker: std::marker::PhantomData<D>,
+}
+
+impl<D: Dimension + CanonicalUnit, S: Scalar + Display> Display for Quantity<D, S>
+where
+    D::Canonical: Abbreviate,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.value, D::Canonical::ABBREVIATION)
+    }
+}
+impl<D: Dimension, S: Scalar + Debug> Debug for Quantity<D, S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("Quantity").field(&self.value).finish()
+    }
 }
 
 impl<D: Dimension, S: Scalar> Quantity<D, S> {

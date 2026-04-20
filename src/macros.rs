@@ -75,7 +75,7 @@ macro_rules! __measure_conversions {
 macro_rules! unit_type {
     (
         $(#[$meta:meta])*
-        $vis:vis $unit:ident of dimension $dimension:ident
+        $vis:vis $unit:ident$(($abbrv:literal))? of dimension $dimension:ident
     ) => {
         $(#[$meta])*
         #[derive(Clone, Copy, Debug, Default)]
@@ -103,6 +103,12 @@ macro_rules! unit_type {
                 <$crate::quantity::Quantity<$dimension, S>>::from_scalar::<Self>(value)
             }
         }
+
+        $(
+            impl $crate::Abbreviate for $unit {
+                const ABBREVIATION: &str = $abbrv;
+            }
+        )?
     };
 }
 
@@ -126,11 +132,11 @@ macro_rules! unit_type {
 macro_rules! simple_unit {
     (
         $(#[$meta:meta])*
-        $vis:vis $unit:ident of dimension $dimension:ident = $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?
+        $vis:vis $unit:ident$(($abbrv:literal))? of dimension $dimension:ident = $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?
     ) => {
         $crate::unit_type!(
             $(#[$meta])*
-            $vis $unit of dimension $dimension
+            $vis $unit$(($abbrv))? of dimension $dimension
         );
 
         impl const $crate::UnitOf<$dimension> for $unit {
@@ -149,10 +155,10 @@ macro_rules! simple_unit {
 macro_rules! __dimension_raw {
     (
         $(#[$meta:meta])*
-        $vis:vis dim $name:ident {
+        $vis:vis dim $name:ident $(in $canonical:ty)? {
             $(
                 $(#[$unit_meta:meta])*
-                $unit:ident: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
+                $unit:ident$(($abbrv:literal))?: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
             )+
         }
     ) => {
@@ -165,9 +171,15 @@ macro_rules! __dimension_raw {
         $(
             $crate::simple_unit!(
                 $(#[$unit_meta])*
-                $vis $unit of dimension $name = $($rhsper per canonical)? $(per $lhsper canonical)?
+                $vis $unit$(($abbrv))? of dimension $name = $($rhsper per canonical)? $(per $lhsper canonical)?
             );
         )+
+
+        $(
+            impl $crate::CanonicalUnit for $name {
+                type Canonical = $canonical;
+            }
+        )?
     }
 }
 
@@ -193,19 +205,19 @@ macro_rules! __dimension_raw {
 macro_rules! dimension {
     (
         $(#[$meta:meta])*
-        $vis:vis dim $name:ident {
+        $vis:vis dim $name:ident $(in $canonical:ty)? {
             $(
                 $(#[$unit_meta:meta])*
-                $unit:ident: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
+                $unit:ident$(($abbrv:literal))?: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
             )+
         }
     ) => {
         $crate::__dimension_raw!(
             $(#[$meta])*
-            $vis dim $name {
+            $vis dim $name $(in $canonical)? {
                 $(
                     $(#[$unit_meta])*
-                    $unit: $($rhsper per canonical)? $(per $lhsper canonical)?,
+                    $unit$(($abbrv))?: $($rhsper per canonical)? $(per $lhsper canonical)?,
                 )+
             }
         );
@@ -223,10 +235,10 @@ macro_rules! dimension {
 macro_rules! derived_dimension {
     {
         $(#[$meta:meta])*
-        $vis:vis dim $name:ident($type:ty) {
+        $vis:vis dim $name:ident($type:ty) $(in $canonical:ty)? {
             $(
                 $(#[$unit_meta:meta])*
-                $unit:ident: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
+                $unit:ident$(($abbrv:literal))?: $($rhsper:literal per canonical)? $(per $lhsper:literal canonical)?,
             )+
         }
     } => {
@@ -236,8 +248,14 @@ macro_rules! derived_dimension {
         $(
             $crate::simple_unit!(
                 $(#[$unit_meta])*
-                $vis $unit of dimension $name = $($rhsper per canonical)? $(per $lhsper canonical)?
+                $vis $unit$(($abbrv))? of dimension $name = $($rhsper per canonical)? $(per $lhsper canonical)?
             );
         )+
+
+        $(
+            impl $crate::CanonicalUnit for $name {
+                type Canonical = $canonical;
+            }
+        )?
     }
 }

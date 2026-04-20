@@ -1,8 +1,11 @@
 #![feature(const_trait_impl, const_ops)]
 
 use tuant::{
-    dimension::simplify::{Cancel, Commute, Pass, PassL},
-    premade::{Joules, LinearVelocity, Meters, MetersPerSecond, Seconds, Time},
+    dimension::simplify::{Cancel, Commute, PassL},
+    premade::{
+        DegreesPerSecondSquared, Frequency, Joules, LinearVelocity, Meters, MetersPerSecond,
+        Seconds,
+    },
     quantity::Quantity,
 };
 
@@ -15,7 +18,10 @@ fn main() {
 
     let unit = ((energy * time) / (time * energy)) / time;
 
-    let unit = unit.simplify::<PassL<Commute<Cancel>>>();
+    let unit: Quantity<Frequency> = unit.simplify::<PassL<Commute<Cancel>>>();
+    let aaccel = 60.0 * DegreesPerSecondSquared;
+
+    println!("{unit}, {aaccel}")
 }
 
 const fn const_operations() -> Quantity<LinearVelocity> {

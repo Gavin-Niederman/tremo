@@ -50,3 +50,10 @@ pub const trait UnitOf<D: Dimension + ?Sized> {
     fn convert_to_canonical<S: [const] Scalar>(canonical: S) -> S;
     fn convert_from_canonical<S: [const] Scalar>(canonical: S) -> S;
 }
+
+pub trait CanonicalUnit: Dimension {
+    type Canonical: UnitOf<Self>;
+}
+pub trait Abbreviate {
+    const ABBREVIATION: &str;
+}
