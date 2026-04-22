@@ -4,7 +4,6 @@
     const_ops,
     const_cmp,
     const_clone,
-    // specialization
 )]
 
 use core::marker::Sized;

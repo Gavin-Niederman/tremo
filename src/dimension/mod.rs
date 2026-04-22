@@ -25,9 +25,10 @@ impl<R: Dimension> DimDiv<R> for Dimensionless {
     type Output = Per<Dimensionless, R>;
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Per<Num: Dimension, Den: Dimension>(std::marker::PhantomData<(Num, Den)>);
-#[derive(Debug, Clone, Copy)]
+
+#[derive(Clone, Copy)]
 pub struct Mul<L: Dimension, R: Dimension>(std::marker::PhantomData<(L, R)>);
 
 pub trait Commute: Dimension {

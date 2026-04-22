@@ -1,6 +1,6 @@
 #![feature(const_trait_impl, const_ops)]
 
-use tuant::{
+use tremo::{
     dimension::simplify::{Cancel, Commute, PassL},
     quantity::Quantity,
     si::{

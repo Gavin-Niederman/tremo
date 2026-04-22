@@ -23,7 +23,7 @@ dimension! {
 
 dimension! {
     /// Represents a length of time. Canonically represented in seconds.
-    pub dim Time {
+    pub dim Time in Seconds {
         Microseconds("μs"): 1_000_000.0 per canonical,
         Milliseconds("ms"): 1000.0 per canonical,
         Seconds("s"): 1.0 per canonical,
@@ -36,7 +36,7 @@ dimension! {
 }
 
 dimension! {
-    pub dim Angle {
+    pub dim Angle in Radians {
         Radians("rad"): 1.0 per canonical,
         Rotations("rot"): per 6.28318530717959 canonical,
         Degrees("°"): 57.2957795130823 per canonical,
@@ -46,7 +46,7 @@ dimension! {
 
 dimension! {
     /// Represents mass. Canonically represented in kilograms.
-    pub dim Mass {
+    pub dim Mass in Kilograms {
         Micrograms("μg"): 1_000_000_000.0 per canonical,
         Milligrams("mg"): 1_000_000.0 per canonical,
         Grams("g"): 1_000.0 per canonical,
@@ -61,7 +61,7 @@ dimension! {
 }
 
 dimension! {
-    pub dim Current {
+    pub dim Current in Amperes {
         Milliamperes("mA"): 1000.0 per canonical,
         Amperes("A"): 1.0 per canonical,
         Kiloamperes("kA"): per 1000.0 canonical,
@@ -69,20 +69,20 @@ dimension! {
 }
 
 dimension! {
-    pub dim Amount {
+    pub dim Amount in Moles {
         Moles("mol"): 1.0 per canonical,
     }
 }
 
 dimension! {
-    pub dim Luminosity {
+    pub dim Luminosity in Candelas {
         Candelas("cd"): 1.0 per canonical,
     }
 }
 
 dimension! {
     /// Represents temperature. Canonically represented in kelvin.
-    pub dim Temperature {
+    pub dim Temperature in Kelvin {
         Kelvin("K"): 1.0 per canonical,
     }
 }
